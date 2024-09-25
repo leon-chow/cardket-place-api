@@ -1,0 +1,47 @@
+# Ignore development and production configuration files
+appsettings.Development.json
+appsettings.Production.json
+appsettings.json
+# Ignore user-specific files
+*.user
+
+# Ignore Visual Studio files
+.vs/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln.docstates
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Ignore build output
+bin/
+obj/
+Migrations/
+
+# Ignore .NET Core artifacts
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Ignore .NET SDK files
+*.suo
+*.user
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+bin/
+obj/
+out/
+artifacts/
+_VersionInfo.*
+*.swp
+*.swo
+*~.nib
+*.so
+*.dylib
+*.userprefs
+*.lock.json
