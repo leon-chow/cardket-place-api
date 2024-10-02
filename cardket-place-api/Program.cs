@@ -1,4 +1,5 @@
 using cardket_place_api;
+using cardket_place_api.Models.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,6 +12,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication().AddCookie(IdentityConstants.ApplicationScheme).AddBearerToken(IdentityConstants.BearerScheme);
+
+builder.Services.AddIdentityCore<Account>().AddEntityFrameworkStores<DataContext>().AddApiEndpoints();
+
 // Database Connection
 builder.Services.AddDbContext<DataContext>(options =>
 {
@@ -19,13 +25,6 @@ builder.Services.AddDbContext<DataContext>(options =>
         builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), null);
     });
 });
-
-// Identity Settings
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
-{
-    options.Password.RequiredLength = 6;
-    options.User.RequireUniqueEmail = false;
-}).AddEntityFrameworkStores<DataContext>().AddDefaultTokenProviders();
 
 var app = builder.Build();
 
@@ -37,6 +36,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.MapIdentityApi<Account>();
 
 app.UseAuthorization();
 

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace cardket_place_api
 {
-    public class DataContext : IdentityDbContext
+    public class DataContext : IdentityDbContext<Account>
     {
         protected readonly IConfiguration configuration;
 
