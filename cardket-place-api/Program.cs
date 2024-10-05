@@ -15,7 +15,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication().AddCookie(IdentityConstants.ApplicationScheme).AddBearerToken(IdentityConstants.BearerScheme);
 
-builder.Services.AddIdentityCore<Account>().AddEntityFrameworkStores<DataContext>().AddApiEndpoints();
+// Routing
+builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 // Database Connection
 builder.Services.AddDbContext<DataContext>(options =>
@@ -36,8 +37,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-app.MapIdentityApi<Account>();
 
 app.UseAuthorization();
 

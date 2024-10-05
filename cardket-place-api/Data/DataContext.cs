@@ -8,11 +8,6 @@ namespace cardket_place_api
     {
         protected readonly IConfiguration configuration;
 
-        public DataContext(IConfiguration configuration)
-        {
-            this.configuration = configuration;
-        }
-
         public DataContext(IConfiguration configuration, DbContextOptions options) : base(options)
         {
             this.configuration = configuration;
