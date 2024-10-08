@@ -13,7 +13,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddAuthorization();
-builder.Services.AddAuthentication().AddCookie(IdentityConstants.ApplicationScheme).AddBearerToken(IdentityConstants.BearerScheme);
+// builder.Services.AddAuthentication().AddCookie(IdentityConstants.ApplicationScheme).AddBearerToken(IdentityConstants.BearerScheme);
 
 // Routing
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
@@ -27,6 +27,9 @@ builder.Services.AddDbContext<DataContext>(options =>
     });
 });
 
+builder.Services.AddIdentity<Account, IdentityRole>()
+    .AddEntityFrameworkStores<DataContext>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -37,8 +40,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-app.UseAuthorization();
 
 app.MapControllers();
 
