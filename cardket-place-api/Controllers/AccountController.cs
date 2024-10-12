@@ -1,7 +1,10 @@
 ﻿using cardket_place_api.Models.DTOs;
 using cardket_place_api.Models.Entities;
+using cardket_place_api.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace cardket_place_api.Controllers
 {
@@ -13,11 +16,13 @@ namespace cardket_place_api.Controllers
         private readonly UserManager<Account> _userManager;
         private readonly SignInManager<Account> _signInManager;
         private readonly ILogger<AccountController> _logger;
-        public AccountController(UserManager<Account> userManager, SignInManager<Account> signInManager, IConfiguration config, ILogger<AccountController> logger) {
+        private readonly AuthService _authService;
+        public AccountController(UserManager<Account> userManager, SignInManager<Account> signInManager, IConfiguration config, ILogger<AccountController> logger, AuthService authService) {
             this._config = config;
             this._userManager = userManager;
             this._signInManager = signInManager;
             this._logger = logger;
+            this._authService = authService;
         }
         
         [HttpPost("login")]
@@ -28,7 +33,24 @@ namespace cardket_place_api.Controllers
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
                 if (result.Succeeded)
                 {
-                    return Ok(new { message = "Login Successful!" });
+                    var user = await _userManager.FindByNameAsync(model.Email);
+                    if (user != null)
+                    {
+                        var userRoles = await _userManager.GetRolesAsync(user);
+
+                        var authClaims = new List<Claim>
+                        {
+                            new Claim(ClaimTypes.Name, user.UserName),
+                            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                        };
+                        foreach (var userRole in userRoles)
+                        {
+                            authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+                        }
+                        var token = _authService.GenerateJWTToken(authClaims);
+
+                        return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token), expiration = token.ValidTo });
+                    }
                 }
                 return Unauthorized(new { message = "Invalid login attempt. " });
             }
