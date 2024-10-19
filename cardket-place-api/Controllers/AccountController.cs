@@ -19,12 +19,12 @@ namespace cardket_place_api.Controllers
         private readonly AuthService _authService;
         private readonly UserService _userService;
         public AccountController(UserManager<Account> userManager, SignInManager<Account> signInManager, IConfiguration config, ILogger<AccountController> logger, AuthService authService, UserService userService) {
-            this._config = config;
-            this._userManager = userManager;
-            this._signInManager = signInManager;
-            this._logger = logger;
-            this._authService = authService;
-            this._userService = userService;
+            _config = config;
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _logger = logger;
+            _authService = authService;
+            _userService = userService;
         }
         
         [HttpPost("login")]
@@ -43,7 +43,7 @@ namespace cardket_place_api.Controllers
         }
 
         [HttpGet("logout")]
-        public async Task<IActionResult> logout() { 
+        public async Task<IActionResult> Logout() { 
             await _signInManager.SignOutAsync();
             return Ok(new { message = "Successfully logged out!" });
         }
@@ -54,7 +54,7 @@ namespace cardket_place_api.Controllers
             // Check if the username/email is available
             // check that the credentials are good enough
             // Register
-            if (!ModelState.IsValid)
+            if (ModelState.IsValid)
             {
                 var user = new Account { UserName = model.Email };
                 var result = await _userManager.CreateAsync(user, model.Password);
@@ -65,6 +65,27 @@ namespace cardket_place_api.Controllers
                 return BadRequest(result.Errors);
             }
             return BadRequest("Invalid model.");
+        }
+        [HttpPost("update/{username}")]
+        public async Task<IActionResult> UpdateUser([FromBody] UserDto updatedUser)
+        {
+            var user = await _userManager.FindByNameAsync(updatedUser.Username);
+            if (user != null)
+            {
+                // consider using mapper here
+                user.ImageUrl = updatedUser.ImageUrl;
+                user.Nickname = updatedUser.Nickname;
+
+                var result = await _userManager.UpdateAsync(user);
+
+                if (!result.Succeeded)
+                {
+                    return BadRequest(result.Errors);
+                }
+
+                return Ok(user);
+            }
+            return NotFound();
         }
     }
 }
