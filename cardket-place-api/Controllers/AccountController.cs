@@ -17,12 +17,14 @@ namespace cardket_place_api.Controllers
         private readonly SignInManager<Account> _signInManager;
         private readonly ILogger<AccountController> _logger;
         private readonly AuthService _authService;
-        public AccountController(UserManager<Account> userManager, SignInManager<Account> signInManager, IConfiguration config, ILogger<AccountController> logger, AuthService authService) {
+        private readonly UserService _userService;
+        public AccountController(UserManager<Account> userManager, SignInManager<Account> signInManager, IConfiguration config, ILogger<AccountController> logger, AuthService authService, UserService userService) {
             this._config = config;
             this._userManager = userManager;
             this._signInManager = signInManager;
             this._logger = logger;
             this._authService = authService;
+            this._userService = userService;
         }
         
         [HttpPost("login")]
@@ -30,27 +32,10 @@ namespace cardket_place_api.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
-                if (result.Succeeded)
+                var (IsAuthenticated, Token, Message) = await _userService.HandleLogin(model);
+                if (IsAuthenticated)
                 {
-                    var user = await _userManager.FindByNameAsync(model.Email);
-                    if (user != null)
-                    {
-                        var userRoles = await _userManager.GetRolesAsync(user);
-
-                        var authClaims = new List<Claim>
-                        {
-                            new Claim(ClaimTypes.Name, user.UserName),
-                            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                        };
-                        foreach (var userRole in userRoles)
-                        {
-                            authClaims.Add(new Claim(ClaimTypes.Role, userRole));
-                        }
-                        var token = _authService.GenerateJWTToken(authClaims);
-
-                        return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token), expiration = token.ValidTo });
-                    }
+                    return Ok(new { token = Token.EncodedPayload });
                 }
                 return Unauthorized(new { message = "Invalid login attempt. " });
             }

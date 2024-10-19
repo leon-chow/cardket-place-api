@@ -38,7 +38,6 @@ builder.Services.AddAuthentication(options =>
         };
     });
 // builder.Services.AddAuthentication().AddCookie(IdentityConstants.ApplicationScheme).AddBearerToken(IdentityConstants.BearerScheme);
-builder.Services.AddScoped<AuthService>();
 
 // Routing
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
@@ -54,6 +53,9 @@ builder.Services.AddDbContext<DataContext>(options =>
 
 builder.Services.AddIdentity<Account, IdentityRole>()
     .AddEntityFrameworkStores<DataContext>();
+
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<UserService>();
 
 var app = builder.Build();
 
