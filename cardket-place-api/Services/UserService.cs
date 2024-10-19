@@ -1,5 +1,6 @@
 ﻿using cardket_place_api.Models.DTOs;
 using cardket_place_api.Models.Entities;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -46,6 +47,41 @@ namespace cardket_place_api.Services
                 }
             }
             return (false, null, "Invalid login attempt.");
+        }
+
+        public async Task<(bool hasSucceeded, IEnumerable<IdentityError>? errors)> HandleRegister(RegisterDto model)
+        {
+            // Check if the username/email is available
+            // check that the credentials are good enough
+            // Register
+            var user = new Account { UserName = model.Email };
+            var result = await _userManager.CreateAsync(user, model.Password);
+            if (result.Succeeded)
+            {
+                return (true, null);
+            }
+            return (false, result.Errors);
+        } 
+
+        public async Task<(bool hasSucceeded, IEnumerable<IdentityError>? errors)> HandleUpdateUser(UserDto updatedUser)
+        {
+            var user = await _userManager.FindByNameAsync(updatedUser.Username);
+            if (user != null)
+            {
+                // consider using mapper here
+                user.ImageUrl = updatedUser.ImageUrl;
+                user.Nickname = updatedUser.Nickname;
+
+                var result = await _userManager.UpdateAsync(user);
+
+                if (!result.Succeeded)
+                {
+                    return (false, result.Errors);
+                }
+
+                return (true, null);
+            }
+            return (false, null);
         }
     }
 }

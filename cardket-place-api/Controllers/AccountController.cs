@@ -56,36 +56,34 @@ namespace cardket_place_api.Controllers
             // Register
             if (ModelState.IsValid)
             {
-                var user = new Account { UserName = model.Email };
-                var result = await _userManager.CreateAsync(user, model.Password);
-                if (result.Succeeded)
+                var (hasSucceeded, errors) = await _userService.HandleRegister(model);
+                if (hasSucceeded)
                 {
-                    return Ok(new { message = "User registered successfully!" });
+                    return Ok("Successfully registered new user!");
                 }
-                return BadRequest(result.Errors);
+                return Unauthorized(errors);
             }
             return BadRequest("Invalid model.");
         }
-        [HttpPost("update/{username}")]
+        [HttpPost("update")]
         public async Task<IActionResult> UpdateUser([FromBody] UserDto updatedUser)
         {
-            var user = await _userManager.FindByNameAsync(updatedUser.Username);
-            if (user != null)
+            if (ModelState.IsValid)
             {
-                // consider using mapper here
-                user.ImageUrl = updatedUser.ImageUrl;
-                user.Nickname = updatedUser.Nickname;
-
-                var result = await _userManager.UpdateAsync(user);
-
-                if (!result.Succeeded)
+                var (hasSucceeded, errors) = await _userService.HandleUpdateUser(updatedUser);
+                if (hasSucceeded)
                 {
-                    return BadRequest(result.Errors);
+                    return Ok("Successfully updated user!");
                 }
-
-                return Ok(user);
+                return Unauthorized(errors);
             }
-            return NotFound();
+            return BadRequest("Invalid model.");
+        }
+
+        [HttpPost("delete/")]
+        public IActionResult DeleteUser([FromBody] UserDto user)
+        {
+            return Ok(user);
         }
     }
 }
